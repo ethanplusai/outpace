@@ -1,0 +1,5 @@
+ 25 wpm: ~110s wave 6 score 10960 | hits by: {"beetle":10,"stack":7,"hopper":7,"giant":3,"moth":1} | ended by: creature,creature,creature,creature,creature,creature
+ 45 wpm: ~119s wave 6 score 15758 | hits by: {"beetle":8,"hopper":9,"stack":8,"giant":2,"moth":1,"wave":1} | ended by: creature,creature,creature,creature,creature,creature
+ 70 wpm: ~131s wave 7 score 30162 | hits by: {"beetle":8,"hopper":7,"stack":9,"giant":6,"wave":2} | ended by: creature,creature,creature,creature,creature,creature
+100 wpm: ~131s wave 7 score 47220 | hits by: {"hopper":11,"stack":4,"giant":8,"beetle":9,"wave":4} | ended by: creature,creature,creature,caught,creature,creature
+130 wpm: ~126s wave 7 score 50919 | hits by: {"beetle":8,"hopper":18,"wave":7,"giant":3,"stack":6} | ended by: creature,creature,creature,creature,caught,caught

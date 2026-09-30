@@ -1,0 +1,2 @@
+{"agent":"backend-builder","model":"sonnet-5.5","tokens":62750,"tool_uses":9,"duration_ms":143001,"result":"30/30 tests pass"}
+{"agent":"security-qa","model":"sonnet-5.5","tokens":67127,"tool_uses":12,"duration_ms":158483,"result":"no injection/traversal/forgery; 3 confirmed: forgeable stats (Med), unverified handles (Low), unicode identity dupes (Low)"}

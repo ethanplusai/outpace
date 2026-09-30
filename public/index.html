@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Outpace: type to outrun the wave</title>
+  <meta name="description" content="A free typing game that adapts to you. Type to keep Claude running ahead of the wave, stomp bugs, build combos and post your score to the global leaderboard.">
+  <meta name="theme-color" content="#1a1915">
+  <meta property="og:title" content="Outpace: type to outrun the wave">
+  <meta property="og:description" content="A typing game that adapts to your speed. How long can you stay ahead?">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://outpace.ethanplus.ai/og.png">
+  <meta property="og:url" content="https://outpace.ethanplus.ai">
+  <meta name="twitter:image" content="https://outpace.ethanplus.ai/og.png">
+  <meta name="twitter:creator" content="@ethanplusai">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <canvas class="scene" id="scene" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="top chrome">
+    <a class="brand" href="/" aria-label="Outpace home">
+      <span class="brand-mark" data-sprite="clawd"></span>
+      <span>outpace</span>
+    </a>
+    <div class="modes" role="tablist" aria-label="Game mode">
+      <button role="tab" class="mode" data-mode="chase" data-variant="endless" aria-selected="true">Chase</button>
+      <span class="dot" aria-hidden="true"></span>
+      <button role="tab" class="mode" data-mode="sprint" data-variant="15" aria-selected="false">15s</button>
+      <button role="tab" class="mode" data-mode="sprint" data-variant="30" aria-selected="false">30s</button>
+      <button role="tab" class="mode" data-mode="sprint" data-variant="60" aria-selected="false">60s</button>
+    </div>
+    <nav class="icons">
+      <button class="icon-btn" id="boardBtn" type="button" aria-label="Leaderboard" title="Leaderboard">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>
+      </button>
+      <button class="icon-btn" id="howBtn" type="button" aria-label="How to play" title="How to play">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17.2v.1"/></svg>
+      </button>
+      <button class="icon-btn" id="soundBtn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="off" d="M17 9l5 6M22 9l-5 6"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main class="play" id="play" data-mode="chase">
+    <div class="hud" id="hud" aria-live="off">
+      <div class="hearts" id="hearts" aria-label="Lives"></div>
+      <div class="hud-main">
+        <span class="hud-score" id="score" data-show="chase">0</span>
+        <span class="hud-timer" id="timer" data-show="sprint">0:30</span>
+      </div>
+      <div class="hud-side">
+        <span class="mult" id="multWrap" data-show="chase" data-m="1">
+          <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring" id="multRing" cx="18" cy="18" r="15"/></svg>
+          <span id="mult">x1</span>
+        </span>
+        <span class="stat"><b id="wpm">0</b> wpm</span>
+        <span class="stat" data-show="sprint"><b id="acc">100%</b></span>
+        <span class="stat" data-show="chase">wave <b id="level">1</b></span>
+      </div>
+    </div>
+
+    <div class="banner" id="banner" aria-live="polite"></div>
+
+    <section class="stage" id="stage" aria-label="Typing area">
+      <div class="text-window">
+        <div class="text" id="text">
+          <div class="wavefront" id="wave"></div>
+          <div class="caret" id="caret"></div>
+        </div>
+      </div>
+      <div class="popups" id="popups" aria-hidden="true"></div>
+      <div class="overlay" id="overlay"><span id="overlayText">Type to run · space to jump</span></div>
+      <input id="kbd" class="kbd" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Type the words shown">
+      <p class="hints"><span><kbd>space</kbd> jump (tap again for double and triple)</span><span><kbd>esc</kbd> restart</span><span><kbd>tab</kbd> new run</span></p>
+    </section>
+
+    <section class="results glass" id="results" hidden aria-live="polite">
+      <p class="eyebrow" id="resEyebrow">Swept away</p>
+      <div class="res-big"><span id="resBig">0</span><small id="resUnit">points</small></div>
+      <p class="pb" id="resPb" hidden>New personal best</p>
+      <dl class="res-stats" id="resStats"></dl>
+      <figure class="chart">
+        <svg id="chart" viewBox="0 0 600 90" role="img" aria-label="Your speed over time"></svg>
+        <figcaption><span class="lg you"></span>You <span class="lg tide" id="lgTide"></span><span id="lgTideText">Wave</span></figcaption>
+      </figure>
+
+      <form class="submit" id="submitForm" autocomplete="off" novalidate>
+        <div class="submit-row">
+          <input id="fName" maxlength="20" placeholder="Your name" aria-label="Your name" required>
+          <div class="handle">
+            <div class="seg" role="radiogroup" aria-label="Link a profile (optional)">
+              <button type="button" role="radio" data-ht="github" aria-checked="false" title="GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 0 0-3.3 20.5c.5.1.7-.2.7-.5v-1.8c-2.9.6-3.5-1.4-3.5-1.4-.5-1.2-1.2-1.5-1.2-1.5-1-.7 0-.6 0-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.5 1.1 3.1.9.1-.7.4-1.1.7-1.4-2.3-.3-4.8-1.2-4.8-5.2 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.4.1-2.8 0 0 .9-.3 2.9 1.1a10 10 0 0 1 5.3 0c2-1.4 2.9-1.1 2.9-1.1.6 1.4.2 2.5.1 2.8.7.7 1.1 1.7 1.1 2.8 0 4-2.5 4.9-4.8 5.2.4.3.7 1 .7 2v2.9c0 .3.2.6.7.5A10.5 10.5 0 0 0 12 1.5z"/></svg></button>
+              <button type="button" role="radio" data-ht="x" aria-checked="false" title="X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zM16.7 19.2h1.7L7.4 4.7H5.6z"/></svg></button>
+              <button type="button" role="radio" data-ht="none" aria-checked="true" title="No profile">none</button>
+            </div>
+            <div class="handle-input">
+              <span class="at">@</span>
+              <input id="fHandle" placeholder="profile (optional)" maxlength="39" disabled aria-label="GitHub or X username">
+              <img class="handle-avatar" id="fAvatar" alt="" hidden>
+            </div>
+          </div>
+        </div>
+        <p class="form-msg" id="formMsg" role="status"></p>
+        <button class="btn primary" id="submitBtn" type="submit">Post to leaderboard</button>
+      </form>
+
+      <div class="res-actions">
+        <button class="btn" id="againBtn" type="button">Run again <kbd>enter</kbd></button>
+        <button class="btn ghost" id="resBoardBtn" type="button">Leaderboard</button>
+        <button class="btn ghost" id="shareBtn" type="button">Copy result</button>
+      </div>
+    </section>
+  </main>
+
+  <aside class="drawer glass" id="boardDrawer" aria-labelledby="boardTitle" hidden>
+    <div class="drawer-head">
+      <h2 id="boardTitle">Leaderboard</h2>
+      <button class="icon-btn close" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="board-tabs" role="tablist" aria-label="Leaderboard">
+      <button role="tab" data-board="chase:endless" aria-selected="true">Chase</button>
+      <button role="tab" data-board="sprint:15" aria-selected="false">15s</button>
+      <button role="tab" data-board="sprint:30" aria-selected="false">30s</button>
+      <button role="tab" data-board="sprint:60" aria-selected="false">60s</button>
+    </div>
+    <ol class="board-list" id="boardList"></ol>
+    <button class="btn ghost more" id="moreBtn" type="button" hidden>Show more</button>
+  </aside>
+
+  <aside class="drawer glass" id="howDrawer" aria-labelledby="howTitle" hidden>
+    <div class="drawer-head">
+      <h2 id="howTitle">How to play</h2>
+      <button class="icon-btn close" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <ul class="how">
+      <li><span class="how-ico" data-sprite="clawd"></span><div><h3>Type to run, space to jump</h3><p>Every correct letter carries Claude forward, and words move on by themselves. Space is only for jumping. Press it again in the air for a double or triple jump. On a phone, tap the sky to jump.</p></div></li>
+      <li><span class="how-ico" data-sprite="beetle"></span><div><h3>Creatures come at you</h3><p>They walk toward you whether you type or not. Jump over them, or land on the small ones to stomp them. Each one has its own trick.</p>
+        <dl class="bestiary">
+          <div><dt>Beetle</dt><dd>jump or stomp · ½ heart</dd></div>
+          <div><dt>Moth</dt><dd>flies at head height, don't jump · ½ heart</dd></div>
+          <div><dt>Hopper</dt><dd>bounces, time it · ½ heart</dd></div>
+          <div><dt>Code Stack</dt><dd>double jump · 1 heart</dd></div>
+          <div><dt>Glitch Giant</dt><dd>triple jump · 1½ hearts</dd></div>
+        </dl></div></li>
+      <li><span class="how-ico wave-ico"></span><div><h3>Outrun the wave</h3><p>The wave keeps pace with your typing and speeds up as you get faster. If it catches you, you lose a heart. Keep typing while you jump so it can't catch up.</p></div></li>
+      <li><span class="how-ico gold-ico"></span><div><h3>Sparkles, hearts and combos</h3><p><b class="gold">Golden words</b> push the wave back. <b class="heart">Heart words</b> restore a heart. Type 25 letters in a row without a mistake to raise your multiplier, up to x8.</p></div></li>
+      <li><span class="how-ico adapt-ico"></span><div><h3>Waves and worlds</h3><p>Every 20 seconds brings a new wave, with harder words and new creatures. Every two waves the scenery changes too. For pure speed, try a 15, 30 or 60 second Sprint, where nothing comes at you.</p></div></li>
+    </ul>
+    <p class="fine">Free, with no accounts. We only store your name and an optional profile link. A fan-made game, not affiliated with or endorsed by Anthropic. Claude and its mascot belong to Anthropic.</p>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <p class="credit chrome">created with Opus 5.5 by <a href="https://x.com/ethanplusai" target="_blank" rel="noopener">Ethan</a></p>
+
+  <script src="/js/words.js"></script>
+  <script src="/js/engine.js"></script>
+  <script src="/js/sound.js"></script>
+  <script src="/js/scene.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

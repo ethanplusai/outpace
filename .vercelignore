@@ -1,0 +1,7 @@
+data/
+.agents/
+node_modules/
+docs/
+test/
+scripts/
+.env*

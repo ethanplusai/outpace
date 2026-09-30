@@ -1,0 +1,17 @@
+{
+  "name": "outpace",
+  "version": "1.0.0",
+  "description": "A Claude-themed typing runner: type to run, space to jump, outrun an adaptive wave. Built end to end by Claude Opus 5.5.",
+  "license": "MIT",
+  "homepage": "https://outpace.ethanplus.ai",
+  "repository": { "type": "git", "url": "https://github.com/ethanplusai/outpace.git" },
+  "keywords": ["typing-game", "typing-test", "wpm", "claude", "opus", "pixel-art", "leaderboard"],
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test test/",
+    "sim": "node scripts/simulate.js",
+    "feasibility": "node scripts/feasibility.js"
+  },
+  "engines": { "node": ">=18" }
+}

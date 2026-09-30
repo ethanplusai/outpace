@@ -1,0 +1,15 @@
+  0wpm beetle  no-jump:hit    1j:0c/13s of 101    2j:16c/48s of 303     3j:123c/146s of 909
+  0wpm moth    no-jump:clear  1j:75c/8s of 101    2j:216c/38s of 303    3j:654c/111s of 909
+  0wpm hopper  no-jump:hit    1j:0c/8s of 101     2j:11c/41s of 303     3j:113c/123s of 909
+  0wpm stack   no-jump:hit    1j:0c/0s of 101     2j:11c/0s of 303      3j:117c/0s of 909
+  0wpm giant   no-jump:hit    1j:0c/0s of 101     2j:0c/0s of 303       3j:30c/0s of 909
+ 60wpm beetle  no-jump:hit    1j:6c/10s of 101    2j:43c/29s of 303     3j:206c/86s of 909
+ 60wpm moth    no-jump:clear  1j:82c/6s of 101    2j:246c/20s of 303    3j:748c/55s of 909
+ 60wpm hopper  no-jump:hit    1j:3c/11s of 101    2j:37c/29s of 303     3j:190c/84s of 909
+ 60wpm stack   no-jump:hit    1j:0c/0s of 101     2j:29c/0s of 303      3j:171c/0s of 909
+ 60wpm giant   no-jump:hit    1j:0c/0s of 101     2j:3c/0s of 303       3j:92c/0s of 909
+120wpm beetle  no-jump:hit    1j:10c/6s of 101    2j:55c/17s of 303     3j:243c/43s of 909
+120wpm moth    no-jump:clear  1j:85c/6s of 101    2j:260c/14s of 303    3j:805c/29s of 909
+120wpm hopper  no-jump:clear  1j:82c/7s of 101    2j:252c/19s of 303    3j:773c/48s of 909
+120wpm stack   no-jump:hit    1j:0c/0s of 101     2j:31c/0s of 303      3j:178c/0s of 909
+120wpm giant   no-jump:hit    1j:0c/0s of 101     2j:7c/0s of 303       3j:110c/0s of 909
