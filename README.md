@@ -45,6 +45,7 @@ npm start        # http://localhost:4173, no install step, no dependencies
 npm test         # 47 tests: engine rules, score validation, API
 npm run sim      # balance: typing-and-jumping bots from 25 to 130 wpm
 npm run feasibility   # proves every creature is beatable and measures the timing window
+node scripts/redis-smoke.js  # live check against Upstash (needs KV_REST_API_URL/TOKEN)
 ```
 
 Needs Node 18 or newer. There are **zero npm dependencies**. Locally, scores are saved to `data/scores.json`.

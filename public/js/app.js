@@ -677,6 +677,7 @@
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Submission failed');
+      lastSubmitAt = Date.now();
       store.set('me', { name: data.entry.name, handleType, handle: handleType === 'none' ? '' : h });
       form.classList.add('sent');
       const label = BOARD_LABEL[`${s.mode}:${s.variant}`];
@@ -722,6 +723,7 @@
   let board = 'chase:endless';
   let boardOffset = 0;
   let boardReq = 0;
+  let lastSubmitAt = 0;
   const PAGE = 25;
 
   function selectBoard(key, reload) {
@@ -743,7 +745,9 @@
       moreBtn.hidden = true;
     }
     try {
-      const r = await fetch(`/api/leaderboard?mode=${m}&variant=${v}&limit=${PAGE}&offset=${boardOffset}`);
+      // right after posting a score, skip the CDN copy so your new rank shows immediately
+      const fresh = Date.now() - lastSubmitAt < 60000 ? `&fresh=${Date.now()}` : '';
+      const r = await fetch(`/api/leaderboard?mode=${m}&variant=${v}&limit=${PAGE}&offset=${boardOffset}${fresh}`);
       const data = await r.json();
       if (req !== boardReq) return;
       if (!data.ok) throw new Error(data.error);

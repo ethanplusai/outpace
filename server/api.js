@@ -22,12 +22,24 @@ function createApi({ store, now = Date.now }) {
     return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected));
   }
 
+  // Run tokens are rate limited per instance in memory: free, and good enough since a token
+  // only buys the right to *attempt* a submission, which is limited again in the store.
+  const runHits = new Map();
+  function localHit(ip, windowMs) {
+    const t = now();
+    const recent = (runHits.get(ip) || []).filter((ts) => t - ts < windowMs);
+    recent.push(t);
+    runHits.set(ip, recent);
+    if (runHits.size > 10000) runHits.clear();
+    return recent.length;
+  }
+
   const json = (status, body, headers) => ({ status, body, headers: headers || {} });
   const fail = (status, error, headers) => json(status, { ok: false, error }, headers);
   const slowDown = () => fail(429, 'Too many requests, slow down', { 'Retry-After': '120' });
 
   async function run(body, ip) {
-    if ((await store.hit('run', ip, RATE_WINDOW_MS)) > MAX_RUNS_PER_WINDOW) return slowDown();
+    if (localHit(ip, RATE_WINDOW_MS) > MAX_RUNS_PER_WINDOW) return slowDown();
     if (!body.ok) return fail(body.status, body.error);
     const { mode, variant } = body.value;
     if (!v.isValidBoard(mode, variant)) return fail(400, 'Invalid mode or variant');
@@ -37,7 +49,6 @@ function createApi({ store, now = Date.now }) {
   }
 
   async function scores(body, ip) {
-    if ((await store.hit('score', ip, RATE_WINDOW_MS)) > MAX_SCORES_PER_WINDOW) return slowDown();
     if (!body.ok) return fail(body.status, body.error);
     const b = body.value;
     const { mode, variant, runId, issuedAt, token } = b;
@@ -52,6 +63,9 @@ function createApi({ store, now = Date.now }) {
     if (!checked.ok) return fail(400, checked.error);
     const fields = checked.value;
     if (t - issuedAt < fields.durationMs - 1500) return fail(400, 'Run duration is not plausible');
+
+    // Everything above is pure CPU, so junk traffic never reaches (or bills) the database.
+    if ((await store.hit('score', ip, RATE_WINDOW_MS)) > MAX_SCORES_PER_WINDOW) return slowDown();
 
     // claim last, so a rejected submission doesn't burn the run
     if (!(await store.claimRun(runId, RUN_TTL_MS))) return fail(409, 'Run already submitted');
@@ -68,7 +82,7 @@ function createApi({ store, now = Date.now }) {
     return json(200, {
       ok: true, mode, variant, total,
       entries: entries.map((e, i) => ({ rank: offset + i + 1, ...publicEntry(e) })),
-    });
+    }, { 'Cache-Control': 'public, max-age=0, s-maxage=120, stale-while-revalidate=300' }); // served from the CDN
   }
 
   const routes = {
