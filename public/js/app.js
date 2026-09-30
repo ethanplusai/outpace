@@ -927,6 +927,15 @@
   raf = requestAnimationFrame(frame);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); scrollY = -1; moveCaret(); });
 
+  // Vercel Web Analytics: the script only exists on Vercel deployments, so skip it locally.
+  if (!/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname)) {
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    const va = document.createElement('script');
+    va.defer = true;
+    va.src = '/_vercel/insights/script.js';
+    document.head.appendChild(va);
+  }
+
   // test hook: lets automated tests drive the game deterministically
   window.__outpace = { get game() { return game; }, scene, handleChar, newGame };
 })();
