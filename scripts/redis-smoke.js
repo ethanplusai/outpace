@@ -5,13 +5,15 @@ const assert = require('assert');
 const { createApi } = require('../server/api');
 const { createRedisStore } = require('../server/redis-store');
 
+const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+
 (async () => {
   let clock = Date.now();
   const store = createRedisStore({ prefix: 'outpace-smoke:', secret: 'smoke-secret', now: () => clock });
   const api = createApi({ store, now: () => clock });
   const ip = 'smoke-' + Math.random().toString(16).slice(2);
   const call = (method, pathname, value, query = '') =>
-    api.handle({ method, pathname, query: new URLSearchParams(query), body: { ok: true, value }, ip });
+    api.handle({ method, pathname, query: new URLSearchParams(query), body: { ok: true, value }, ip, ua: IPHONE });
   const board = 'sprint:15';
   const name = 'Smoke ' + Math.random().toString(16).slice(2, 6);
 
@@ -28,7 +30,8 @@ const { createRedisStore } = require('../server/redis-store');
   const a = await submit(60);
   assert.strictEqual(a.status, 200, JSON.stringify(a.body));
   assert.strictEqual(a.body.improved, true);
-  console.log('first submit  ->', a.body.rank, '/', a.body.total);
+  assert.deepStrictEqual([a.body.entry.device, a.body.entry.browser, a.body.entry.os], ['mobile', 'Safari', 'iOS']);
+  console.log('first submit  ->', a.body.rank, '/', a.body.total, a.body.entry.device, a.body.entry.browser, a.body.entry.os);
 
   const lower = await submit(40);
   assert.strictEqual(lower.body.improved, false, 'lower score must not replace the best');

@@ -3,6 +3,7 @@
 
 const crypto = require('crypto');
 const v = require('./validate');
+const { parseUserAgent } = require('./ua');
 
 const MAX_BODY = 4096;
 const RUN_TTL_MS = 3 * 60 * 60 * 1000;
@@ -48,7 +49,7 @@ function createApi({ store, now = Date.now }) {
     return json(200, { ok: true, runId, issuedAt, token: sign(runId, issuedAt, mode, variant) });
   }
 
-  async function scores(body, ip) {
+  async function scores(body, ip, ua) {
     if (!body.ok) return fail(body.status, body.error);
     const b = body.value;
     const { mode, variant, runId, issuedAt, token } = b;
@@ -69,7 +70,7 @@ function createApi({ store, now = Date.now }) {
 
     // claim last, so a rejected submission doesn't burn the run
     if (!(await store.claimRun(runId, RUN_TTL_MS))) return fail(409, 'Run already submitted');
-    const r = await store.addScore(v.boardKey(mode, variant), fields);
+    const r = await store.addScore(v.boardKey(mode, variant), { ...fields, ...parseUserAgent(ua, b.touch === true) });
     return json(200, { ok: true, improved: r.improved, entry: publicEntry(r.entry), rank: r.rank, total: r.total });
   }
 
@@ -88,11 +89,11 @@ function createApi({ store, now = Date.now }) {
   const routes = {
     '/api/health': { GET: () => json(200, { ok: true }) },
     '/api/run': { POST: (r) => run(r.body, r.ip) },
-    '/api/scores': { POST: (r) => scores(r.body, r.ip) },
+    '/api/scores': { POST: (r) => scores(r.body, r.ip, r.ua) },
     '/api/leaderboard': { GET: (r) => leaderboard(r.query) },
   };
 
-  // req: { method, pathname, query: URLSearchParams, body: {ok,value}|{ok:false,status,error}, ip }
+  // req: { method, pathname, query: URLSearchParams, body: {ok,value}|{ok:false,status,error}, ip, ua }
   async function handle(req) {
     const route = routes[req.pathname];
     if (!route) return fail(404, 'Not found');
@@ -114,6 +115,7 @@ function publicEntry(e) {
   return {
     name: e.name, handleType: e.handleType, handle: e.handle, score: e.score,
     wpm: e.wpm, accuracy: e.accuracy, level: e.level, createdAt: e.createdAt,
+    device: e.device || null, browser: e.browser || null, os: e.os || null,
   };
 }
 

@@ -26,7 +26,7 @@ Play it at **[outpace.ethanplus.ai](https://outpace.ethanplus.ai)**.
 - A new wave every 20 seconds brings harder words and new creatures, and the scenery changes every two waves.
 - **Sprint mode** (15, 30 or 60 seconds) is a plain typing test with nothing chasing you.
 
-Scores go to a global leaderboard. You can attach a GitHub or X username to show your avatar and link your profile. There are no accounts and no sign-in.
+Scores go to a global leaderboard. You can attach a GitHub or X username to show your avatar and link your profile. Each entry also shows the device and browser the run was played on (for example 📱 Safari · iOS). The server works this out from your browser's user-agent and stores only that coarse label. There are no accounts and no sign-in.
 
 ## Screenshots
 

@@ -98,7 +98,7 @@ function createServer(options = {}) {
 
   async function handleApi(req, res, url) {
     const body = await readBody(req);
-    const out = await api.handle({ method: req.method, pathname: url.pathname, query: url.searchParams, body, ip: clientIp(req) });
+    const out = await api.handle({ method: req.method, pathname: url.pathname, query: url.searchParams, body, ip: clientIp(req), ua: req.headers['user-agent'] });
     sendJson(res, out.status, out.body, Object.assign(body.close ? { Connection: 'close' } : {}, out.headers));
   }
 

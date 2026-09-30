@@ -673,6 +673,7 @@
           name, handleType, handle: handleType === 'none' ? '' : h,
           score: s.score, wpm: s.wpm, accuracy: s.accuracy, level: s.level,
           durationMs: s.durationMs, chars: s.chars, errors: s.errors,
+          touch: navigator.maxTouchPoints > 1, // lets the server tell an iPad from a Mac
         }),
       });
       const data = await res.json();
@@ -766,6 +767,11 @@
   }
 
   const GH_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 0 0-3.3 20.5c.5.1.7-.2.7-.5v-1.8c-2.9.6-3.5-1.4-3.5-1.4-.5-1.2-1.2-1.5-1.2-1.5-1-.7 0-.6 0-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.5 1.1 3.1.9.1-.7.4-1.1.7-1.4-2.3-.3-4.8-1.2-4.8-5.2 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.4.1-2.8 0 0 .9-.3 2.9 1.1a10 10 0 0 1 5.3 0c2-1.4 2.9-1.1 2.9-1.1.6 1.4.2 2.5.1 2.8.7.7 1.1 1.7 1.1 2.8 0 4-2.5 4.9-4.8 5.2.4.3.7 1 .7 2v2.9c0 .3.2.6.7.5A10.5 10.5 0 0 0 12 1.5z"/></svg>';
+  const DEVICE_ICON = {
+    desktop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>',
+    mobile: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>',
+    tablet: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="2.5" width="15" height="19" rx="2"/><path d="M11 18.5h2"/></svg>',
+  };
   const X_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zM16.7 19.2h1.7L7.4 4.7H5.6z"/></svg>';
 
   function rowEl(e, chase, me, i) {
@@ -788,8 +794,8 @@
       const img = new Image();
       img.className = 'avatar';
       img.alt = '';
-      img.loading = 'lazy';
       img.referrerPolicy = 'no-referrer';
+      // not lazy: a detached lazy image never loads, and it only joins the page once it has
       img.addEventListener('load', () => initial.replaceWith(img));
       img.src = avatarUrl(e.handleType, e.handle);
     }
@@ -798,6 +804,8 @@
     const b = document.createElement('b');
     b.textContent = e.name;
     pn.appendChild(b);
+    const meta = document.createElement('span');
+    meta.className = 'pmeta';
     if (e.handle && e.handleType !== 'none') {
       const a = document.createElement('a');
       a.href = profileUrl(e.handleType, e.handle);
@@ -806,17 +814,28 @@
       a.innerHTML = e.handleType === 'github' ? GH_ICON : X_ICON;
       a.append(document.createTextNode(e.handle));
       a.setAttribute('aria-label', `${e.name} on ${e.handleType === 'github' ? 'GitHub' : 'X'}`);
-      pn.appendChild(a);
+      meta.appendChild(a);
     }
+    if (e.device && e.browser) {
+      const dv = document.createElement('span');
+      dv.className = 'pdevice';
+      const where = e.os && e.os !== 'Other' ? `${e.browser} · ${e.os}` : e.browser;
+      dv.title = `Played on ${e.device === 'mobile' ? 'a phone' : e.device === 'tablet' ? 'a tablet' : 'a computer'}: ${where}`;
+      dv.innerHTML = DEVICE_ICON[e.device] || DEVICE_ICON.desktop;
+      dv.append(document.createTextNode(where));
+      meta.appendChild(dv);
+    }
+    if (meta.childNodes.length) pn.appendChild(meta);
     player.appendChild(pn);
     li.appendChild(player);
 
     const sc = document.createElement('span');
     sc.className = 'score-col';
     sc.appendChild(cell('score-v', chase ? e.score.toLocaleString() : `${e.score} wpm`));
-    sc.appendChild(cell('score-sub', chase
-      ? `${Math.round(e.wpm)} wpm · ${Math.round(e.accuracy)}% · wave ${e.level}`
-      : `${Math.round(e.accuracy)}% · ${ago(e.createdAt)}`));
+    // the extra detail drops away on narrow screens so names and devices keep their room
+    const sub = cell('score-sub', chase ? `${Math.round(e.wpm)} wpm` : `${Math.round(e.accuracy)}%`);
+    sub.appendChild(cell('sub-extra', chase ? ` · ${Math.round(e.accuracy)}% · wave ${e.level}` : ` · ${ago(e.createdAt)}`));
+    sc.appendChild(sub);
     li.appendChild(sc);
     return li;
   }

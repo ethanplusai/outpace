@@ -23,7 +23,7 @@ function readBody(req) {
 module.exports = async function handler(req, res) {
   const url = new URL(req.url, 'https://outpace.local');
   const ip = req.headers['x-real-ip'] || String(req.headers['x-forwarded-for'] || 'unknown').split(',')[0].trim();
-  const out = await getApi().handle({ method: req.method, pathname: url.pathname, query: url.searchParams, body: readBody(req), ip });
+  const out = await getApi().handle({ method: req.method, pathname: url.pathname, query: url.searchParams, body: readBody(req), ip, ua: req.headers['user-agent'] });
   res.statusCode = out.status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');

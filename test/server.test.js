@@ -273,7 +273,7 @@ withServer('ranking order and leaderboard pagination', async (s) => {
   assert.deepEqual(lb.json.entries.map((e) => e.name), ['High', 'Mid', 'MidLoose', 'Low']);
   assert.deepEqual(lb.json.entries.map((e) => e.rank), [1, 2, 3, 4]);
   assert.equal(lb.json.total, 4);
-  assert.deepEqual(Object.keys(lb.json.entries[0]).sort(), ['accuracy', 'createdAt', 'handle', 'handleType', 'level', 'name', 'rank', 'score', 'wpm']);
+  assert.deepEqual(Object.keys(lb.json.entries[0]).sort(), ['accuracy', 'browser', 'createdAt', 'device', 'handle', 'handleType', 'level', 'name', 'os', 'rank', 'score', 'wpm']);
 
   const page = await s.req('GET', '/api/leaderboard?mode=chase&variant=endless&limit=2&offset=1');
   assert.deepEqual(page.json.entries.map((e) => e.name), ['Mid', 'MidLoose']);

@@ -78,6 +78,9 @@ function createRedisStore({
       accuracy: fields.accuracy,
       level: fields.level,
       durationMs: fields.durationMs,
+      device: fields.device,
+      browser: fields.browser,
+      os: fields.os,
       createdAt: new Date(now()).toISOString(),
     };
     const sortScore = entry.score * 10000 + Math.round(entry.accuracy * 10);

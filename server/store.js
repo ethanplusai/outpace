@@ -86,6 +86,9 @@ function createStore({ dataDir, secret, now = Date.now } = {}) {
       accuracy: fields.accuracy,
       level: fields.level,
       durationMs: fields.durationMs,
+      device: fields.device,
+      browser: fields.browser,
+      os: fields.os,
       createdAt: new Date(now()).toISOString(),
     };
     const identity = identityOf(candidate);
